@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
@@ -28,7 +28,7 @@ jobs:
 
       - name: Archive Windows application
         run: |
-          $source = '/tmp/NAFTAL-CE211-HSE-win32-x64'
+          $source = 'release/NAFTAL-CE211-HSE-win32-x64'
           $zipPath = 'NAFTAL-CE211-HSE-win32-x64.zip'
           if (Test-Path $source) {
             Compress-Archive -Path "$source\**" -DestinationPath $zipPath
@@ -43,5 +43,5 @@ jobs:
           name: NAFTAL-CE211-HSE-windows
           path: |
             NAFTAL-CE211-HSE-win32-x64.zip
-            /tmp/NAFTAL-CE211-HSE-win32-x64/**/*
+            release/NAFTAL-CE211-HSE-win32-x64/**/*
           retention-days: 30

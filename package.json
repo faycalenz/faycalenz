@@ -6,8 +6,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "pack": "electron-packager . NAFTAL-CE211-HSE --platform=win32 --arch=x64 --out=/tmp --overwrite",
-    "build": "electron-packager . NAFTAL-CE211-HSE --platform=win32 --arch=x64 --out=/tmp --overwrite --icon=icon.ico"
+    "pack": "electron-packager . NAFTAL-CE211-HSE --platform=win32 --arch=x64 --out=release --overwrite",
+    "build": "electron-packager . NAFTAL-CE211-HSE --platform=win32 --arch=x64 --out=release --overwrite --icon=icon.ico"
   },
   "keywords": [
     "hse",
