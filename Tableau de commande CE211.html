@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HSE CE211 — Tableau de bord</title>
+<style>
+:root{--bg:#f4f5f2;--card:#fff;--tx:#1f2421;--mu:#6b726d;--bd:#dfe2dc;--ac:#1f6f5c;--rd:#c0392b;--or:#c27c0e;--gr:#2e8b57}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--tx);font-size:15px}
+header{background:var(--ac);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{font-size:17px}header small{opacity:.8;display:block;font-weight:400}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer;border:1px solid var(--bd);background:#fff;padding:7px 12px;border-radius:6px}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+nav{display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bd)}
+nav button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:12px 16px;white-space:nowrap;color:var(--mu)}
+nav button.on{color:var(--ac);border-color:var(--ac);font-weight:600}
+main{max-width:980px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h2{font-size:16px;margin:4px 0 12px}
+.b{display:inline-block;padding:2px 9px;border-radius:10px;font-size:12px;color:#fff}
+.rd{background:var(--rd)}.or{background:var(--or)}.gr{background:var(--gr)}.gy{background:#8a908b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:8px 0 3px}
+input,select,textarea{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:#fff}
+textarea{min-height:70px}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 0}.chk input{width:auto;margin-top:4px}
+.done{text-decoration:line-through;color:var(--mu)}
+pre{white-space:pre-wrap;background:#fafaf7;border:1px solid var(--bd);border-radius:6px;padding:12px;font-family:inherit;line-height:1.7}
+.mu{color:var(--mu);font-size:13px}
+#out p,.doc p{white-space:pre-wrap;margin:6px 0}.doc{font-size:14px}.hd,.tb{width:100%;border-collapse:collapse;margin:6px 0}.hd td,.tb td,.tb th{border:1px solid #444;padding:5px;font-size:13px;vertical-align:top}.tb th{background:#eee}
+.tb.sm td,.tb.sm th{font-size:11px;padding:2px 4px}
+
+.kpi{cursor:pointer}.kpi:hover{border-color:var(--ac)}
+@media print{body.pn main>*:not(#nout){display:none}header,nav,.np{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header><div><h1 id="ttl"></h1><small>Centre Emplisseur CE211 — Skikda</small></div>
+<button onclick="setLang(L=='ar'?'fr':'ar')" id="lb"></button></header>
+<nav id="nav"></nav>
+<main id="m"></main>
+<script>
+var T={
+ar:{t:"لوحة تحكم HSE — NAFTAL GPL",lb:"Français",tabs:["الآجال","برنامج الجمعة","التقارير","نسخ احتياطي"],
+d:"يوم",late:"متأخر",tbd:"حدّد التاريخ",addE:"إضافة أجل",nm:"الاسم",dt:"التاريخ",add:"إضافة",del:"حذف",
+fr0:"الجمعة",wk:["الكرات S1 و S3 والسيجار C2 و C6 و C8: اختبار منظومة الرش الثابتة (المضخات)","منظومة رش مآوي المضخات مع مركز VRAC","اختبار 7 مدافع مراقبة (Lances monitores) + إزالة الأعشاب المحيطة"],
+cyc:"تاريخ جمعة البداية للدورة (الدورة 1)",nextF:"الجمعات القادمة",today:"مهام الجمعة الثابتة (مع عون الاستغلال VRAC)",
+tasks:["مراقبة صمامات الأمان: S1 و S3 و C2 و C6 و C8"],
+mon:"مهام شهرية",monT:["تنظيف الأعشاب حول صمامات الطوفان السبعة (Déluge)"],
+sem:"إلزامي كل 6 أشهر (مفتش HSE + قسم الصيانة): فحص صمامات الأمان، التشحيم، الأغطية الواقية من الأحوال الجوية وغيرها",
+rt:"نوع التقرير",rtp:["محضر تجربة/اختبار","تقرير حادث","محضر تفتيش","محضر اجتماع"],
+f:["الموضوع","التاريخ","المكان","المشاركون","الملاحظات والوقائع","الإجراءات المتخذة","التوصيات"],
+gen:"إنشاء التقرير",copy:"نسخ",print:"طباعة",hist:"سجل التقارير",ref:"المرجع",
+bk:"حفظ وتحميل البيانات",exp:"تصدير نسخة (ملف JSON)",imp:"استيراد نسخة",bkn:"البيانات محفوظة تلقائياً في هذا المتصفح. صدّر نسخة بانتظام للاحتفاظ بها على الحاسوب.",
+ev:["معاير الغاز المتفجر VENTIX — التحقق","المطافئ — التحقق UNM","الكشف التقني للإسعاف","مراقبة صمامات الأمان — نصف سنوي"]},
+fr:{t:"Tableau de bord HSE — NAFTAL GPL",lb:"العربية",tabs:["Échéances","Programme vendredi","Rapports","Sauvegarde"],
+d:"j",late:"En retard",tbd:"Définir la date",addE:"Ajouter une échéance",nm:"Nom",dt:"Date",add:"Ajouter",del:"Suppr.",
+fr0:"Vendredi",wk:["Sphères S1, S3 et cigares C2, C6, C8 : essai du système d'arrosage fixe (pompes)","Système d'arrosage des abris pompes avec poste VRAC","Essai des 7 lances monitores + désherbage des alentours"],
+cyc:"Date du vendredi de départ (cycle 1)",nextF:"Prochains vendredis",today:"Tâches fixes du vendredi (avec l'opérateur extérieur exploitation VRAC)",
+tasks:["Contrôle des soupapes de sûreté : S1, S3, C2, C6, C8"],
+mon:"Tâches mensuelles",monT:["Désherbage des 7 vannes déluge"],
+sem:"Obligatoire tous les 6 mois (inspecteur HSE + section maintenance) : contrôle des soupapes, graissage, bouchons intempéries et autres",
+rt:"Type de rapport",rtp:["PV d'essai","Rapport d'incident","PV d'inspection","PV de réunion"],
+f:["Objet","Date","Lieu","Participants","Constats et faits","Actions menées","Recommandations"],
+gen:"Générer le rapport",copy:"Copier",print:"Imprimer",hist:"Historique des rapports",ref:"Réf.",
+bk:"Sauvegarde",exp:"Exporter une copie (JSON)",imp:"Importer une copie",bkn:"Les données sont enregistrées automatiquement dans ce navigateur. Exportez régulièrement une copie sur l'ordinateur.",
+ev:["Explosimètre VENTIX — vérification","Extincteurs — vérification UNM","Contrôle technique ambulance","Contrôle soupapes de sûreté — semestriel"]}};
+var L="ar",tab=0,S;
+function load(){try{S=JSON.parse(window.ce211?ce211.loadData():localStorage.getItem("ce211"))}catch(e){try{localStorage.setItem("ce211_corrompu",localStorage.getItem("ce211"))}catch(x){}alert("Données illisibles : copie conservée (ce211_corrompu).")}
+ S=S||{ev:[{k:0,d:"2026-10-30"},{k:1,d:"2026-10-30"},{k:2,d:"2026-12-30"},{k:3,d:""}],cyc:"2026-10-02",done:{},rep:[],n:0};
+ S.custom=S.custom||[];S.cnt=S.cnt||{inc:0,cphs:8,ex:0}}
+function save(){try{var j=JSON.stringify(S);if(window.ce211){var r=ce211.saveData(j);if(r!=="ok")throw new Error(r)}else localStorage.setItem("ce211",j)}catch(e){if(!window.se){window.se=1;alert("Échec de l'enregistrement : "+e.message)}}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function days(d){return Math.round((new Date(d+"T00:00:00")-new Date(new Date().toDateString()))/864e5)}
+function badge(d){if(!d)return'<span class="b gy">'+T[L].tbd+'</span>';var n=days(d);
+ return n<0?'<span class="b rd">'+T[L].late+' '+(-n)+T[L].d+'</span>':'<span class="b '+(n<=30?'or':'gr')+'">'+n+' '+T[L].d+'</span>'}
+function setLang(l){L=l;document.documentElement.lang=l;document.documentElement.dir=l=="ar"?"rtl":"ltr";render()}
+function setTab(i){tab=i;render()}
+function fmt(d){return new Date(d+"T00:00:00").toLocaleDateString(L=="ar"?"ar-DZ":"fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function v0(){var t=T[L],h='<div class="card"><h2>'+t.tabs[0]+'</h2>';
+ S.ev.forEach(function(e,i){h+='<div class="row" style="padding:8px 0;border-bottom:1px solid var(--bd)"><b>'+t.ev[e.k]+'</b><span class="row">'+badge(e.d)+'<input type="date" style="width:150px" value="'+e.d+'" onchange="S.ev['+i+'].d=this.value;save();render()"></span></div>'});
+ S.custom.forEach(function(e,i){h+='<div class="row" style="padding:8px 0;border-bottom:1px solid var(--bd)"><b>'+esc(e.n)+'</b><span class="row">'+badge(e.d)+'<input type="date" style="width:150px" value="'+e.d+'" onchange="S.custom['+i+'].d=this.value;save();render()"><button onclick="S.custom.splice('+i+',1);save();render()">'+t.del+'</button></span></div>'});
+ h+='</div><div class="card np"><h2>'+t.addE+'</h2><div class="grid"><div><label>'+t.nm+'</label><input id="en"></div><div><label>'+t.dt+'</label><input type="date" id="ed"></div></div><br><button class="p" onclick="addE()">'+t.add+'</button></div>';return h}
+function addE(){var n=document.getElementById("en").value.trim();if(!n)return;S.custom.push({n:n,d:document.getElementById("ed").value});save();render()}
+function v1(){var t=T[L],h='<div class="card np"><label>'+t.cyc+'</label><input type="date" value="'+S.cyc+'" onchange="S.cyc=this.value;save();render()"></div><h2>'+t.nextF+'</h2>';
+ fridays().forEach(function(f){var key=f.d,id=function(j){return key+"_"+j};
+  h+='<div class="card"><div class="row"><b>'+fmt(f.d)+'</b><span class="b gy">'+(f.c+1)+'/3</span></div>';
+  var items=[t.wk[f.c]].concat(t.tasks);
+  items.forEach(function(x,j){var k=id(j);h+='<label class="chk"><input type="checkbox" '+(S.done[k]?"checked":"")+' onchange="S.done[\''+k+'\']=this.checked;save();render()"><span class="'+(S.done[k]?"done":"")+'">'+x+'</span></label>'});
+  h+='</div>'});
+ h+='<div class="card"><h2>'+t.mon+'</h2>'+t.monT.map(function(x){return'<div class="chk">• '+x+'</div>'}).join("")+'</div><div class="card"><h2>⚠ '+t.ev[3]+'</h2><p>'+t.sem+'</p></div>';return h}
+var M={
+inc:{b:"Branche GPL",n:"Compte-rendu d'accident / incident",c:"ER.GPL.HSE.01.V1",a:"13/12/2020",f:[["ref","1. Référence (…/20…)"],["structure","2. Structure"],["lieu","3. Lieu de l'accident / incident"],["date","4. Date","d"],["heure","5. Heure"],["nom","6. Agent NAFTAL (victime) : Nom"],["prenom","Prénom"],["exp","Expérience"],["age","Âge"],["poste","Poste occupé"],["desc","7. Description du lieu et des installations impliquées","t"],["event","8. Description de l'événement (déroulement des faits)","t"],["dp","9. Dommages aux personnes","t"],["db","Dommages aux biens","t"],["de","Dommages à l'environnement","t"],["causes","10. Causes évidentes","t"],["etab","11. Établissement du CRA/I (nom, date, visa)"],["valid","12. Validation du CRA/I (nom, date, visa)"]]},
+cphs:{b:"Direction Générale",n:"Procès-verbal Commission paritaire hygiène et sécurité",c:"ER.NAF.HSE.19.V2",a:"20 Janvier 2024",s:["Date et visa du Président"],f:[["entite","Entité"],["date","Date","d"],["num","N° (NNN/AAAA)"],["pres","Président"],["secr","Secrétariat"],["pr","Membres présents","t"],["inv","Membres invités","t"],["abs","Membres absents","t"],["ordre","Ordre du jour","tb:Ordre du jour|C.A (code d'attribution a à i)"],["diff","Liste de diffusion"],["suivi","Point de situation sur les actions de la CPHS précédente","tb:Recommandation|Action précédente|Responsable|Échéance|Avancement"],["deroul","Déroulement de la réunion","t"],["actions","Actions engagées","tb:N°|Action engagée|Détail / Modalités|Responsable|Date réalisation"]]},
+ex:{b:"Branche GPL",n:"Procès-verbal d'exercice anti-incendie",c:"ER.GPL.HSE.02.V1",a:"13/12/2020",s:["Inspecteur PCL Sécurité","Chef Service HSE","Chef de Centre"],f:[["district","District"],["site","Site opérationnel"],["scenario","Scénario de l'exercice"],["type","Type de l'exercice (secourisme / évacuation / intervention / sauvetage)"],["pii","Fiche de scénarii du PII"],["but","But de l'exercice","t"],["debut","Date et heure du début"],["fin","Heure de fin"],["causes","Causes principales du sinistre"],["lieu","Lieu du sinistre supposé"],["pers","Personnel impliqué","t"],["moy","Moyens matériels utilisés","t"],["deroul","Déroulement de l'exercice","t"],["anom","Anomalies constatées durant l'exercice","t"],["sugg","Suggestions d'amélioration","t"],["concl","Conclusion","t"]]}};
+var cur="inc";
+function ui(a,b){return L=="ar"?a:b}
+function cp(t){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove()}
+function v2(){var m=M[cur],h='<div class="card np"><label>'+ui("النموذج","Modèle")+'</label><select onchange="cur=this.value;render()">'+Object.keys(M).map(function(k){return'<option value="'+k+'"'+(k==cur?" selected":"")+'>'+M[k].c+' — '+M[k].n+'</option>'}).join("")+'</select>';
+ m.f.forEach(function(f){var k=f[0],ty=f[2]||"";h+='<label>'+f[1]+'</label>';
+  h+=ty=="d"?'<input type="date" id="f_'+k+'">':ty?'<textarea id="f_'+k+'" placeholder="'+(ty.indexOf("tb:")==0?ty.slice(3).split("|").join(" | ")+' — '+ui("سطر لكل صف","une ligne par rang"):"")+'"></textarea>':'<input id="f_'+k+'">'});
+ h+='<br><button onclick="pr()">'+ui("① نسخ التعليمة للذكاء الاصطناعي","① Copier le prompt pour l'IA")+'</button><label>'+ui("② الصق جواب الذكاء الاصطناعي (JSON)","② Coller la réponse JSON de l'IA")+'</label><textarea id="aij"></textarea><div class="row" style="margin-top:8px"><button onclick="fillj()">'+ui("③ تعبئة الحقول","③ Remplir les champs")+'</button><button class="p" onclick="gen()">'+ui("④ إنشاء الوثيقة","④ Générer le document")+'</button></div></div><div id="out"></div><div class="card"><h2>'+T[L].hist+'</h2><div id="hs">'+hist()+'</div></div>';return h}
+function hist(){return S.rep.slice().reverse().map(function(r,i){return'<div class="row" style="padding:6px 0;border-bottom:1px solid var(--bd)"><span>'+esc(r.ref)+' — '+esc(r.o)+'</span><button onclick="show('+(S.rep.length-1-i)+')">▸</button></div>'}).join("")}
+function pr(){var m=M[cur],o={};m.f.forEach(function(f){var ty=f[2]||"";o[f[0]]=f[1]+(ty.indexOf("tb:")==0?" [tableau: une ligne par rang, colonnes séparées par | ; colonnes = "+ty.slice(3).split("|").join(", ")+"]":ty=="d"?" [AAAA-MM-JJ]":"")});
+ cp("Remplis le modèle « "+m.n+" » ("+m.c+") de NAFTAL GPL — CE211 Skikda, à partir de mes notes ci-dessous. Réponds uniquement par un objet JSON avec exactement ces clés (valeurs en texte). N'invente rien : laisse \"\" si l'information manque.\n"+JSON.stringify(o,null,1)+"\n\nMes notes :\n");
+ alert(ui("تم نسخ التعليمة. الصقها في المحادثة مع ملاحظاتك.","Prompt copié. Collez-le dans le chat avec vos notes."))}
+function fillj(){var t=document.getElementById("aij").value.replace(/```json|```/g,"").trim(),j;
+ try{j=JSON.parse(t)}catch(e){alert("JSON invalide");return}
+ M[cur].f.forEach(function(f){var el=document.getElementById("f_"+f[0]),v=j[f[0]];if(!el||v==null)return;
+  if(Array.isArray(v))v=v.map(function(x){return Array.isArray(x)?x.join(" | "):(x&&typeof x=="object"?Object.keys(x).map(function(k){return x[k]}).join(" | "):x)}).join("\n");
+  el.value=v})}
+function gen(){var m=M[cur],v={},y=new Date().getFullYear();
+ m.f.forEach(function(f){v[f[0]]=document.getElementById("f_"+f[0]).value.trim()});
+ S.cnt[cur]=(S.cnt[cur]||0)+1;var no=String(S.cnt[cur]).padStart(3,"0")+"/"+y;
+ if(cur=="inc"&&!v.ref)v.ref=no;if(cur=="cphs"&&!v.num)v.num=no;
+ S.rep.push({t:cur,ref:no,o:m.n,v:v});save();document.getElementById("hs").innerHTML=hist();show(S.rep.length-1)}
+function doc(r){var m=M[r.t],h='<div class="doc"><table class="hd"><tr><td><b>'+m.b+'</b></td><td><b>'+m.n.toUpperCase()+'</b></td><td><b>'+m.c+'</b><br><small>Date d\'application : '+m.a+'</small></td></tr></table><p><b>N° '+esc(r.ref)+'</b></p>';
+ m.f.forEach(function(f){var v=r.v[f[0]]||"",ty=f[2]||"";
+  if(ty=="d"&&v)v=new Date(v+"T00:00:00").toLocaleDateString("fr-FR");
+  if(ty.indexOf("tb:")==0){var c=ty.slice(3).split("|");
+   h+='<p><b>'+f[1]+'</b></p><table class="tb"><tr>'+c.map(function(x){return'<th>'+esc(x)+'</th>'}).join("")+'</tr>'+(v?v.split("\n").filter(Boolean).map(function(l){return'<tr>'+l.split("|").map(function(x){return'<td>'+esc(x.trim())+'</td>'}).join("")+'</tr>'}).join(""):'<tr>'+c.map(function(){return'<td>&nbsp;</td>'}).join("")+'</tr>')+'</table>'}
+  else h+='<p><b>'+f[1]+' :</b> '+(esc(v)||"&nbsp;")+'</p>'});
+ if(m.s)h+='<table class="tb"><tr>'+m.s.map(function(x){return'<th>'+x+'</th>'}).join("")+'</tr><tr>'+m.s.map(function(){return'<td style="height:60px"></td>'}).join("")+'</tr></table>';
+ return h+'<p class="mu">Propriété NAFTAL — Reproduction interdite</p></div>'}
+function show(i){var r=S.rep[i];document.getElementById("out").innerHTML='<div class="card">'+(r.v?doc(r):'<pre>'+esc(r.tx)+'</pre>')+'<div class="np" style="margin-top:10px"><button class="p" onclick="cp(document.querySelector(\'.doc\').innerText);alert(\'OK\')">'+T[L].copy+'</button> <button onclick="print()">'+T[L].print+'</button></div></div>';scrollTo(0,0)}
+function ex(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="ce211-sauvegarde-"+new Date().toISOString().slice(0,10)+".json";a.click()}
+var DT={A:{c:"HADDAD ZOHIER",a:["BOUARIOUA KAMEL","MAKHLOUF MONIR","HADDAD HAMZA","BOUSSABOUA SOUFIANE"],s:"2026-10-03"},B:{c:"LAIB ADEL",a:["SAAD GUERMACHE","CHAIH EL OUDJ","BOUZIDI RIAD","BAOUCHE RAFIK"],s:"2026-10-01"},C:{c:"BELABED YOUCEF",a:["BOUDEKHAN A/SALEM","BAHRI SAADOUNE","ZOUIEN SOFIANE"],s:"2026-09-29"},D:{c:"BOUCHARBAT MOHAMED",a:["HARBI S/ISLAM","LARIBI ADEL","BOULKEROUA FAYEZ"],s:"2026-10-05"}};
+var COL={J:"#fff3b0",N:"#c9d7f5",R:"#e8ece8",M:"#f5b7b1",C:"#c8e6c9",AN:"#ffd8a8",CR:"#d1c4e9"};
+function ini(){S.cnt=S.cnt||{inc:0,cphs:8,ex:0};S.cnt.nt=S.cnt.nt||0;S.q=S.q||JSON.parse(JSON.stringify(DT));S.mk=S.mk||{};S.an=S.an||[];S.hol=S.hol||"";S.nt=S.nt||{};S.custom=S.custom||[];S.rep=S.rep||[];S.done=S.done||{};S.cnt.cr=S.cnt.cr||54;S.sd=S.sd||{};S.mv=S.mv||[];S.sat=S.sat||DS;mig()}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addD(d,n){var x=new Date(d+"T00:00:00");x.setDate(x.getDate()+n);return iso(x)}
+function pos(k,d){var n=Math.round((new Date(d+"T00:00:00")-new Date(S.q[k].s+"T00:00:00"))/864e5);return((n%8)+8)%8}
+function code(k,d){var p=pos(k,d);return p<2?"J":p<4?"N":"R"}
+function isHol(d){return["01-01","01-12","05-01","07-05","11-01"].indexOf(d.slice(5))>=0||S.hol.indexOf(d)>=0}
+function fridays(){var o=[],b=new Date(S.cyc+"T00:00:00"),t0=new Date(new Date().toDateString());t0.setDate(t0.getDate()-14);while(b<t0)b.setDate(b.getDate()+7);
+ for(var i=0;i<6;i++){var x=new Date(b);x.setDate(b.getDate()+7*i);var k=Math.round((x-new Date(S.cyc+"T00:00:00"))/6048e5);o.push({d:iso(x),c:((k%3)+3)%3})}return o}
+function TB(){return L=="ar"?["لوحة القيادة","الآجال","برنامج الجمعة والسبت","المناوبات","العطل وأرصدة CR","التنقيط الشهري","الشذوذات","التقارير","نسخ احتياطي"]:["Tableau de bord","Échéances","Vendredi / Samedi","Quarts","Congés & CR","Notation mensuelle","Anomalies","Rapports","Sauvegarde"]}
+function render(){document.getElementById("ttl").textContent=T[L].t;document.getElementById("lb").textContent=T[L].lb;
+ document.getElementById("nav").innerHTML=TB().map(function(x,i){return'<button class="'+(i==tab?"on":"")+'" onclick="setTab('+i+')">'+x+'</button>'}).join("");
+ document.getElementById("m").innerHTML=bn()+'<div id="nout"></div>'+[vh,v0,vs,vq,vc,vn,va,v2,v3][tab]();if(tab==4)sc()}
+var DS=["Campagne de sensibilisation des chauffeurs du centre : respect du code de la route","Campagne de sensibilisation : conduite défensive","Contrôle périodique des camions avec le chauffeur : 2 extincteurs à poudre de 9 kg","Contrôle de l'extincteur de cabine de 2 kg","Contrôle de la boîte de premiers secours","Autres points de contrôle du véhicule (à compléter)"].join("\n");
+T.ar.tasks.push("مراقبة جميع مطافئ المركز");T.fr.tasks.push("Contrôle de tous les extincteurs du centre");
+window.onafterprint=function(){document.body.className=""};
+function pp(){document.body.className="pn";print()}
+function ff(x){return new Date(x+"T00:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function ff2(x){return x.split("-").reverse().join("/")}
+function rng(f,e){var o=[],x=f;while(x<=e&&o.length<400){o.push(x);x=addD(x,1)}return o}
+function rot(d){var w=Math.round((new Date(d+"T00:00:00")-new Date(S.cyc+"T00:00:00"))/6048e5);return((w%3)+3)%3}
+function bn(){var t0=iso(new Date()),o=[];
+ Object.keys(S.q).forEach(function(k){for(var i=1;i<=2;i++){var d=addD(t0,i),p=pos(k,d),w=new Date(d+"T00:00:00").getDay();
+  var s=function(x,b,l){return'<div class="row" style="padding:5px 0"><span>Quart '+k+' — '+x+' — '+fmt(d)+'</span><button onclick="'+b+'">'+l+'</button></div>'};
+  if(p==0||p==2)o.push(s(p?"NUIT":"JOUR","prog('"+k+"','"+d.slice(0,7)+"')",ui("برنامج العمل A4","Programme A4")));
+  if(p<2&&(w==5||w==6))o.push(s(w==5?"VENDREDI":"SAMEDI","note('"+k+"','"+d+"')",ui("مذكرة العمل","Note de service")))}});
+ if(!o.length)return"";
+ return'<div class="card np" style="border-color:var(--or)"><b>⏰ '+ui("للتبليغ قبل 48 ساعة","À notifier (48 h avant)")+'</b>'+o.join("")+'</div>'}
+function hdr(){return'<p><b>NAFTAL — Branche GPL — District GPL Skikda — CE211</b></p>'}
+function out(h){document.getElementById("nout").innerHTML='<div class="card"><div class="doc">'+h+'</div><div class="np"><button class="p" onclick="pp()">'+T[L].print+'</button></div></div>';scrollTo(0,0)}
+function prog(k,mo){var t=S.q[k],nd=new Date(+mo.slice(0,4),+mo.slice(5),0).getDate(),M=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"],
+ h=hdr()+'<h2>PROGRAMME DE TRAVAIL — Quart '+k+' — '+M[+mo.slice(5)-1]+' '+mo.slice(0,4)+'</h2><p><b>Chef de quart :</b> '+esc(t.c)+'\n<b>Agents :</b> '+esc(t.a.join(", "))+'</p><table class="tb sm"><tr><th>Date</th><th>Poste</th><th>Horaires</th><th>Observation</th></tr>';
+ for(var d=1;d<=nd;d++){var x=mo+"-"+String(d).padStart(2,"0"),c=code(k,x);h+='<tr><td>'+ff(x)+'</td><td>'+(c=="J"?"Jour":c=="N"?"Nuit":"Récupération")+'</td><td>'+(c=="J"?"06h00 – 19h00":c=="N"?"19h00 – 06h00":"—")+'</td><td>'+(isHol(x)?"Jour férié":"")+'</td></tr>'}
+ out(h+'</table><p>Quatre jours de travail ouvrent droit à quatre jours de récupération.</p><p>Skikda, le '+ff2(iso(new Date()))+'\nLe Chef de Service HSE</p>')}
+function note(k,d){var t=S.q[k],w=new Date(d+"T00:00:00").getDay(),key="n|"+k+"|"+d;if(!S.nt[key])S.nt[key]=String(++S.cnt.nt).padStart(3,"0")+"/"+d.slice(0,4);save();
+ var f=T.fr,it=w==5?[f.wk[rot(d)]].concat(f.tasks,["Coordination avec l'opérateur extérieur de la section exploitation VRAC pour les contrôles"]):S.sat.split("\n").filter(Boolean);
+ out(hdr()+'<h2>NOTE DE SERVICE N° '+S.nt[key]+'</h2><p><b>Objet :</b> Travaux programmés le '+ff(d)+' — Quart '+k+'</p><p><b>Chef de quart :</b> '+esc(t.c)+'\n<b>Agents :</b> '+esc(t.a.join(", "))+'</p><p>Le quart '+k+', de service le '+ff(d)+' (06h00 – 19h00), est chargé d\'exécuter :</p>'+it.map(function(x,i){return'<p>'+(i+1)+'. '+esc(x)+'</p>'}).join("")+'<p>Un compte rendu d\'exécution est à remettre au Chef de Service HSE.</p><p>Skikda, le '+ff2(iso(new Date()))+'\nLe Chef de Service HSE</p>')}
+function vs(){return v1()+'<div class="card"><h2>'+ui("السبت — الحملة التحسيسية للسائقين","Samedi — Campagne de sensibilisation des chauffeurs")+'</h2><p class="mu">'+ui("بنود مذكرة السبت (بند في كل سطر، قابلة للتعديل)","Points de la note du samedi (un par ligne, modifiable)")+'</p><textarea style="min-height:140px" onchange="S.sat=this.value;save()">'+esc(S.sat)+'</textarea></div>'}
+function pl(){var o=[];Object.keys(S.q).forEach(function(k){[S.q[k].c].concat(S.q[k].a).forEach(function(p,i){o.push({k:k,p:p,i:i})})});return o}
+function sd(p){return S.sd[p]=S.sd[p]||{f:"",m:"",ca:0,ob:""}}
+var MS=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+var CR_=["m","a","r","d","q"],CN={m:"Missions",a:"Applications",r:"Registre",d:"Discipline",q:"Rapports"};
+function uid(){return"i"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function cmp(a,b){a=a||"";b=b||"";return a<b?-1:a>b?1:0}
+function ss(j,f,v){sd(pl()[j].p)[f]=v;save()}
+function mig(){S.cl=S.cl||{e:[],u:[]};S.wt=S.wt||{m:25,a:15,r:25,d:20,q:15};S.sc=S.sc||{};
+ Object.keys(S.sd).forEach(function(p){var s=S.sd[p];
+  if(s.cd){s.cd.forEach(function(c){S.cl.e.push({id:uid(),p:p,d:c.d||"",n:1,w:c.m||"",o:""});if(c.u){var m=S.mv.filter(function(x){return x.id==c.u})[0];S.cl.u.push({id:uid(),p:p,d:m?m.f:"",n:1,r:c.un||"",o:"",mid:c.u})}});delete s.cd}
+  if(s.cr){for(var i=0;i<s.cr;i++)S.cl.e.push({id:uid(),p:p,d:"",n:1,w:"Solde initial",o:""})}delete s.cr});
+ if(S.nz){Object.keys(S.nz).forEach(function(k){var z=S.nz[k];if(z.t||(z.n!==""&&z.n!=null))S.sc[k]={m:"",a:"",r:"",d:"",q:"",o:(z.t||"")+(z.n!==""&&z.n!=null?" [ancienne note "+z.n+" %]":"")}});delete S.nz}
+ S.ver=4}
+function fifo(p){var E=S.cl.e.filter(function(x){return x.p==p}).sort(function(a,b){return cmp(a.d,b.d)}).map(function(x){return{x:x,left:+x.n}}),U=S.cl.u.filter(function(x){return x.p==p}).sort(function(a,b){return cmp(a.d,b.d)}),log=[];
+ U.forEach(function(u){var need=+u.n;E.forEach(function(e){if(need>0&&e.left>0){var t=Math.min(need,e.left);e.left-=t;need-=t;log.push({u:u,e:e.x,t:t})}});if(need>0)log.push({u:u,e:null,t:need})});
+ var ea=E.reduce(function(s,e){return s+ +e.x.n},0),us=U.reduce(function(s,u){return s+ +u.n},0);return{E:E,log:log,earned:ea,used:us,av:ea-us}}
+function crn(p){return fifo(p).av}
+function bd(p){var s=crn(p);return'<span class="b '+(s<=0?"rd":s<=2?"or":"gr")+'">'+s+' j</span>'}
+function sc(){var a=document.getElementById("c_a"),e=a&&pl()[a.value];if(!e)return;document.getElementById("sc").innerHTML=ui("رصيد CR المتاح","Solde CR disponible")+' : '+bd(e.p)}
+function hist_(p){var ev=[];S.cl.e.forEach(function(x){if(x.p==p)ev.push({d:x.d||"",t:"Acquis",n:+x.n,r:x.w||"",o:x.o||"",id:x.id,k:0})});S.cl.u.forEach(function(x){if(x.p==p)ev.push({d:x.d||"",t:"Utilisé",n:-x.n,r:x.r||"",o:x.o||"",id:x.id,k:1})});
+ ev.sort(function(a,b){return cmp(a.d,b.d)||a.k-b.k});var s=0;ev.forEach(function(x){s+=x.n;x.b=s});return ev}
+function ht(p,ed){return'<table class="tb sm"><tr><th>Date</th><th>Type</th><th>Jours</th><th>Solde après</th><th>Référence</th><th>Observation</th>'+(ed?'<th class="np"></th>':"")+'</tr>'+hist_(p).map(function(x){return'<tr><td>'+(x.d?ff2(x.d):"sans date")+'</td><td>'+x.t+'</td><td>'+(x.n>0?"+":"")+x.n+'</td><td>'+x.b+'</td><td>'+esc(x.r)+'</td><td>'+esc(x.o)+'</td>'+(ed?'<td class="np"><button onclick="dch(\''+x.k+'\',\''+x.id+'\')">×</button></td>':"")+'</tr>'}).join("")+'</table>'}
+function fl(p){var f=fifo(p);return f.log.length?'<table class="tb sm"><tr><th>Utilisation</th><th>Consommé sur le CR du (FIFO)</th><th>Jours</th></tr>'+f.log.map(function(l){return'<tr><td>'+ff2(l.u.d||"")+' — '+esc(l.u.r||"")+'</td><td>'+(l.e?(l.e.d?ff2(l.e.d):"sans date"):'<b>dépassement</b>')+'</td><td>'+l.t+'</td></tr>'}).join("")+'</table>':'<p class="mu">—</p>'}
+function dch(k,id){if(!confirm("Supprimer cette ligne ?"))return;if(k=="0")S.cl.e=S.cl.e.filter(function(x){return x.id!=id});else S.cl.u=S.cl.u.filter(function(x){return x.id!=id});save();render()}
+function adc(){var e=pl()[window.da||0],g=function(x){return document.getElementById(x).value.trim()},n=+g("d_n")||1;if(!e)return;
+ g("d_d").split(/[,;\n]+/).forEach(function(x){x=x.trim();var r=x.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/),d=r?r[3]+"-"+r[2].padStart(2,"0")+"-"+r[1].padStart(2,"0"):/^\d{4}-\d{2}-\d{2}$/.test(x)?x:"";if(d)S.cl.e.push({id:uid(),p:e.p,d:d,n:n,w:g("d_m"),o:g("d_o")})});save();render()}
+function crdoc(){var e=pl()[window.da||0];if(e)out(hdr()+'<h2>HISTORIQUE CR — '+esc(e.p)+'</h2><p>CR disponible : <b>'+crn(e.p)+' j</b></p>'+ht(e.p,0)+'<p><b>Consommation (FIFO)</b></p>'+fl(e.p))}
+function lv(){var g=function(x){return document.getElementById(x).value},e=pl()[g("l_a")],f=g("l_f"),u=g("l_e")||f,t=g("l_t");if(!e||!f||u<f)return;
+ var r=rng(f,u),n=g("l_n")===""?r.length:+g("l_n"),id=uid();
+ if(t=="CR"){if(crn(e.p)<n&&!confirm("Solde CR insuffisant ("+crn(e.p)+" j). Confirmer le dépassement ?"))return;S.cl.u.push({id:uid(),p:e.p,d:f,n:n,r:"saisie",o:"",mid:id})}
+ r.forEach(function(d){if(code(e.k,d)!="R")S.mk[e.k+"|"+e.p+"|"+d]=t});
+ if(t=="C")sd(e.p).ca-=n;
+ S.mv.push({p:e.p,k:e.k,t:t,f:f,e:u,n:n,d:iso(new Date()),id:id});save();render()}
+function unmv(i){var m=S.mv[i];rng(m.f,m.e).forEach(function(d){delete S.mk[m.k+"|"+m.p+"|"+d]});if(m.t=="C")sd(m.p).ca+=m.n;
+ if(m.id)S.cl.u=S.cl.u.filter(function(x){return x.mid!=m.id});S.mv.splice(i,1);save();render()}
+function dem(){var g=function(x){return document.getElementById(x).value.trim()},e=pl()[g("c_a")],d=g("c_d"),n=+g("c_n")||1;if(!e||!d)return;
+ var av=crn(e.p);if(av<n&&!confirm(ui("الرصيد غير كاف: ","Solde insuffisant : ")+av+" j. "+ui("تأكيد التجاوز؟","Confirmer le dépassement ?")))return;
+ var s=sd(e.p),c=Math.ceil(n),no=(++S.cnt.cr)+"/"+d.slice(0,4)+" du "+ff2(iso(new Date())),id=uid(),q=function(l,v){return'<p><b>'+l+' :</b> '+esc(v)+'</p>'};
+ var uu={id:uid(),p:e.p,d:d,n:n,r:"N° "+no.split(" ")[0],o:g("c_o"),mid:id};S.cl.u.push(uu);
+ var lj=fifo(e.p).log.filter(function(l){return l.u===uu}).map(function(l){return(l.e&&l.e.d?ff2(l.e.d):"sans date")+(l.t!=1?" ("+l.t+" j)":"")}).join(", ");
+ for(var i=0;i<c;i++){var x=addD(d,i);if(code(e.k,x)!="R")S.mk[e.k+"|"+e.p+"|"+x]="CR"}
+ var fn=s.f||(e.i?"Agent":"Chef de quart"),mt=s.m,ls=g("c_l"),ia=g("c_i");
+ S.mv.push({p:e.p,k:e.k,t:"CR",f:d,e:addD(d,c-1),n:n,d:iso(new Date()),no:no,id:id});save();render();
+ out('<table class="hd"><tr><td><b>Direction Générale</b></td><td><b>DEMANDE DE CONGÉ DE RÉCUPÉRATION</b></td><td><b>ER.NAF.RH.59.V1</b><br><small>Date d\'application : 17 AVRIL 2022</small></td></tr></table><p><b>N° '+no+'</b></p>'+q("Nom et Prénom",e.p)+q("Fonction",fn)+q("Matricule",mt)+q("Lieu d'affectation","CE211")+q("Durée du congé",String(n).padStart(2,"0")+" jour(s)")+q("Date de départ",ff2(d))+q("Journée(s) à récupérer",lj)+q("Date de retour",ff2(addD(d,c)))+q("Lieu de séjour prévu (adresse exacte)",ls)+q("Nom et qualité de l'agent intérimaire (1)",ia)+'<p><b>Signature de l\'intéressé(e) — Date :</b> '+ff2(iso(new Date()))+'</p><table class="tb"><tr><th>Avis du Responsable d\'activité (2)<br>Nom / prénom et qualité</th><th>Avis du Responsable de la Structure<br>Nom / prénom et qualité</th></tr><tr><td style="height:90px">☐ Acceptée &nbsp; ☐ Refusée<br>Date et Signature</td><td>☐ Acceptée &nbsp; ☐ Refusée<br>Date et Signature</td></tr></table><p><b>Remarque(s) particulière(s) de l\'activité Gestion du Personnel :</b>\nNom/Prénom :          Qualité :          Date et Signature</p><p class="mu">(1) Volet concernant en particulier les postes d\'encadrement et/ou de responsabilité. (2) Cocher la case qui convient.</p><p class="mu">Date d\'édition : Juin 2021 — Propriété NAFTAL — Reproduction interdite</p>')}
+function vc(){var P=pl(),q=(window.fs||"").toLowerCase(),t0=iso(new Date()),cu=P[window.da||0],
+ h='<div class="card np"><div class="row"><h2>'+ui("أرصدة CR والعطل","Soldes CR et congés")+'</h2><input style="width:210px" placeholder="'+ui("بحث: الاسم / الرقم / الفوج","Recherche : nom / matricule / quart")+'" value="'+esc(window.fs||"")+'" onchange="window.fs=this.value;render()"></div><div style="overflow-x:auto"><table class="tb sm"><tr><th>Quart</th><th>Nom et prénom</th><th>Fonction</th><th>Matricule</th><th>CR acquis</th><th>CR utilisé</th><th>CR disponible</th><th>Dernière acq.</th><th>Prochaine échéance</th><th>SOLD CA</th></tr>';
+ P.forEach(function(e,j){var s=sd(e.p);if(q&&(e.k+" "+e.p+" "+s.m).toLowerCase().indexOf(q)<0)return;var f=fifo(e.p),la=f.E.length?f.E[f.E.length-1].x.d:"",nx=S.mv.filter(function(m){return m.p==e.p&&m.f>=t0}).map(function(m){return m.f}).sort()[0]||"";
+  h+='<tr><td>'+e.k+'</td><td><a href="#" onclick="fiche('+j+');return false">'+esc(e.p)+'</a></td><td><input value="'+esc(s.f||(e.i?"Agent":"Chef de quart"))+'" onchange="ss('+j+',\'f\',this.value)"></td><td><input style="width:90px" value="'+esc(s.m)+'" onchange="ss('+j+',\'m\',this.value)"></td><td>'+f.earned+'</td><td>'+f.used+'</td><td>'+bd(e.p)+'</td><td>'+(la?ff2(la):"—")+'</td><td>'+(nx?ff2(nx):"—")+'</td><td><input type="number" step="0.5" style="width:70px" value="'+s.ca+'" onchange="ss('+j+',\'ca\',+this.value)"></td></tr>'});
+ var op=P.map(function(e,j){return'<option value="'+j+'"'+(j==(window.da||0)?" selected":"")+'>Q'+e.k+' — '+esc(e.p)+'</option>'}).join("");
+ h+='</table></div></div><div class="card np"><h2>+ Ajouter CR</h2><div class="grid"><div><label>Agent</label><select onchange="window.da=+this.value;render()">'+op+'</select></div><div><label>'+ui("تاريخ (تواريخ) الاكتساب JJ/MM/AAAA","Date(s) d'acquisition JJ/MM/AAAA, séparées par des virgules")+'</label><input id="d_d" placeholder="05/07/2026, 01/11/2026"></div><div><label>Nombre de jours (par date)</label><input type="number" step="0.5" id="d_n" value="1"></div><div><label>Motif / source</label><input id="d_m" value="Jour férié travaillé"></div><div><label>Observation</label><input id="d_o"></div></div><br><button class="p" onclick="adc()">+ Ajouter CR</button></div>'
+ +'<div class="card"><div class="row"><h2>'+ui("سجل CR","Historique CR")+(cu?' — '+esc(cu.p)+' ('+bd(cu.p)+')':"")+'</h2><button class="np" onclick="crdoc()">'+T[L].print+'</button></div>'+(cu?ht(cu.p,1)+'<p><b>Consommation (FIFO)</b></p>'+fl(cu.p):"")+'</div>'
+ +'<div class="card np"><h2>'+ui("تسجيل عطلة أو غياب","Enregistrer un congé / une absence")+'</h2><div class="grid"><div><label>Agent</label><select id="l_a">'+op+'</select></div><div><label>Type</label><select id="l_t"><option value="C">C — Congé annuel</option><option value="M">M — Maladie</option><option value="AN">AN — Congé annulé</option><option value="CR">CR — Récupération</option></select></div><div><label>Du</label><input type="date" id="l_f"></div><div><label>Au</label><input type="date" id="l_e"></div><div><label>Jours à déduire (vide = jours calendaires)</label><input type="number" step="0.5" id="l_n"></div></div><br><button class="p" onclick="lv()">'+T[L].add+'</button></div>'
+ +'<div class="card np"><h2>'+ui("طلب عطلة استدراكية","Demande de congé de récupération")+'</h2><div class="grid"><div><label>Agent</label><select id="c_a" onchange="sc()">'+op+'</select><b id="sc" style="display:block;margin-top:4px"></b></div><div><label>Date de départ</label><input type="date" id="c_d"></div><div><label>Durée (jours)</label><input type="number" step="0.5" id="c_n" value="1"></div><div><label>Lieu de séjour prévu</label><input id="c_l" value="SKIKDA"></div><div><label>Agent intérimaire (nom et qualité)</label><input id="c_i"></div><div><label>Observation</label><input id="c_o"></div></div><br><button class="p" onclick="dem()">'+ui("إنشاء الطلب وخصم الرصيد (FIFO)","Générer la demande et déduire (FIFO)")+'</button></div>'
+ +'<div class="card np"><h2>'+ui("سجل الحركات","Mouvements")+'</h2>'+(S.mv.length?S.mv.slice().reverse().map(function(m,j){return'<div class="row" style="padding:5px 0;border-bottom:1px solid var(--bd)"><span>'+esc(m.p)+' — <b>'+m.t+'</b> — '+ff2(m.f)+' → '+ff2(m.e)+' — '+m.n+' j'+(m.no?' — N° '+esc(m.no):'')+'</span><button onclick="unmv('+(S.mv.length-1-j)+')">'+ui("إلغاء","Annuler")+'</button></div>'}).join(""):'<p class="mu">—</p>')+'</div>';
+ return h}
+function sf(mo,p){var z=S.sc[mo+"|"+p],w=S.wt,t=0,s=0,k;if(!z)return null;for(k in w){if(z[k]===""||z[k]==null)return null;s+=w[k]*z[k];t+=w[k]}return t==100?Math.round(s/10)/10:null}
+function avg(mo){var a=[];pl().forEach(function(e){var s=sf(mo,e.p);if(s!=null)a.push(s)});return a.length?Math.round(a.reduce(function(x,y){return x+y},0)/a.length*10)/10:null}
+function scs(mo,j,f,el){var p=pl()[j].p,v=el.value;if(f!="o"&&v!==""){v=Math.max(0,Math.min(100,+v));el.value=v}
+ var k=mo+"|"+p,z=S.sc[k]=S.sc[k]||{m:"",a:"",r:"",d:"",q:"",o:""};z[f]=v;save();var s=sf(mo,p),c=document.getElementById("sf"+j);if(c)c.textContent=s==null?"—":s+" %"}
+function wts(k,el){S.wt[k]=Math.max(0,Math.min(100,+el.value||0));save();render()}
+function vn(){var y=window.ny||new Date().getFullYear(),m=window.nm||new Date().getMonth()+1,mo=y+"-"+String(m).padStart(2,"0"),q=window.nq||"",sr=(window.ns||"").toLowerCase(),sb=window.nb||"",W=S.wt,tw=W.m+W.a+W.r+W.d+W.q,P=pl(),
+ h='<div class="card np"><div class="row"><span class="row"><input type="number" style="width:90px" value="'+y+'" onchange="window.ny=+this.value;render()"><select onchange="window.nm=+this.value;render()">'+MS.map(function(x,i){return'<option value="'+(i+1)+'"'+(i+1==m?" selected":"")+'>'+x+'</option>'}).join("")+'</select><select onchange="window.nq=this.value;render()"><option value="">Quart : tous</option>'+Object.keys(S.q).map(function(k){return'<option'+(k==q?" selected":"")+'>'+k+'</option>'}).join("")+'</select><select onchange="window.nb=this.value;render()">'+[["","Score : tous"],["x","Non évalué"],["l","< 60"],["m","60 – 79"],["h","≥ 80"]].map(function(o){return'<option value="'+o[0]+'"'+(o[0]==sb?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select><input style="width:170px" placeholder="Nom / matricule" value="'+esc(window.ns||"")+'" onchange="window.ns=this.value;render()"></span><button onclick="ndoc(\''+mo+'\')">'+T[L].print+'</button></div>'
+ +'<p class="mu" style="margin-top:8px">'+ui("الأوزان (المجموع يجب أن يساوي 100)","Pondérations (le total doit être 100)")+' : '+CR_.map(function(k){return CN[k]+' <input type="number" min="0" max="100" style="width:60px" value="'+W[k]+'" onchange="wts(\''+k+'\',this)"> %'}).join(" · ")+' <span class="b '+(tw==100?"gr":"rd")+'">'+tw+' %</span>'+(tw==100?"":' <b>'+ui("لا يُحسب التنقيط حتى يصبح المجموع 100","Score non calculé tant que le total ≠ 100")+'</b>')+'</p></div>'
+ +'<div class="card" style="overflow-x:auto"><h2>'+MS[m-1]+' '+y+'</h2><table class="tb sm"><tr><th>Nom</th><th>Fonction</th><th>Matricule</th>'+CR_.map(function(k){return'<th>'+CN[k]+'<br>'+W[k]+'%</th>'}).join("")+'<th>Score final</th><th>Observation</th></tr>';
+ P.forEach(function(e,j){var s=sd(e.p),z=S.sc[mo+"|"+e.p]||{m:"",a:"",r:"",d:"",q:"",o:""},f=sf(mo,e.p);
+  if(q&&e.k!=q)return;if(sr&&(e.p+" "+s.m).toLowerCase().indexOf(sr)<0)return;
+  if((sb=="x"&&f!=null)||(sb=="l"&&!(f!=null&&f<60))||(sb=="m"&&!(f!=null&&f>=60&&f<80))||(sb=="h"&&!(f!=null&&f>=80)))return;
+  h+='<tr><td style="white-space:nowrap"><a href="#" onclick="fiche('+j+');return false">'+esc(e.p)+'</a></td><td>'+esc(s.f||(e.i?"Agent":"Chef de quart"))+'</td><td>'+esc(s.m)+'</td>'+CR_.map(function(k){return'<td><input type="number" min="0" max="100" style="width:62px" value="'+z[k]+'" onchange="scs(\''+mo+'\','+j+',\''+k+'\',this)"></td>'}).join("")+'<td><b id="sf'+j+'">'+(f==null?"—":f+" %")+'</b></td><td><input value="'+esc(z.o||"")+'" onchange="scs(\''+mo+'\','+j+',\'o\',this)"></td></tr>'});
+ return h+'</table></div>'}
+function ndoc(mo){var P=pl(),W=S.wt,av={},h=hdr()+'<h2>NOTATION MENSUELLE — '+MS[+mo.slice(5)-1]+' '+mo.slice(0,4)+'</h2><p class="mu">Pondérations : '+CR_.map(function(k){return CN[k]+' '+W[k]+' %'}).join(" · ")+'</p><table class="tb sm"><tr><th>Quart</th><th>Nom et prénom</th><th>Fonction</th><th>Matricule</th>'+CR_.map(function(k){return'<th>'+CN[k]+'</th>'}).join("")+'<th>Score final</th><th>Observation</th></tr>';
+ P.forEach(function(e){var s=sd(e.p),z=S.sc[mo+"|"+e.p]||{},f=sf(mo,e.p);if(f!=null)(av[e.k]=av[e.k]||[]).push(f);
+  h+='<tr><td>'+e.k+'</td><td>'+esc(e.p)+'</td><td>'+esc(s.f||(e.i?"Agent":"Chef de quart"))+'</td><td>'+esc(s.m)+'</td>'+CR_.map(function(k){return'<td>'+esc(z[k]==null?"":z[k])+'</td>'}).join("")+'<td><b>'+(f==null?"":f+" %")+'</b></td><td>'+esc(z.o||"")+'</td></tr>'});
+ out(h+'</table><p><b>Moyennes :</b> '+Object.keys(S.q).map(function(k){var a=av[k];return'Quart '+k+' : '+(a?Math.round(a.reduce(function(x,y){return x+y},0)/a.length*10)/10+" %":"—")}).join("   |   ")+'   |   Général : '+(avg(mo)==null?"—":avg(mo)+" %")+'</p><p>Skikda, le '+ff2(iso(new Date()))+'\nLe Chef de Service HSE</p>')}
+function nd_(mo){return new Date(+mo.slice(0,4),+mo.slice(5),0).getDate()}
+function fiche(j){var e=pl()[j],p=e.p,s=sd(p),f=fifo(p),t=new Date(),ms=[0,1,2].map(function(i){return iso(new Date(t.getFullYear(),t.getMonth()-i,1)).slice(0,7)}),
+ h=hdr()+'<h2>FICHE AGENT</h2><table class="tb"><tr><th>Nom et prénom</th><td>'+esc(p)+'</td><th>Quart</th><td>'+e.k+'</td></tr><tr><th>Fonction</th><td>'+esc(s.f||(e.i?"Agent":"Chef de quart"))+'</td><th>Matricule</th><td>'+esc(s.m)+'</td></tr></table><p><b>CR :</b> acquis '+f.earned+' — utilisé '+f.used+' — disponible '+f.av+'</p><p><b>Historique CR</b></p>'+ht(p,0)
+ +'<p><b>Historique des congés / absences</b></p><table class="tb sm"><tr><th>Type</th><th>Du</th><th>Au</th><th>Jours</th></tr>'+(S.mv.filter(function(m){return m.p==p}).map(function(m){return'<tr><td>'+m.t+'</td><td>'+ff2(m.f)+'</td><td>'+ff2(m.e)+'</td><td>'+m.n+'</td></tr>'}).join("")||'<tr><td colspan="4">—</td></tr>')+'</table>'
+ +'<p><b>Pointages (3 derniers mois)</b></p><table class="tb sm"><tr><th>Mois</th><th>J</th><th>N</th><th>Fériés trav.</th><th>Absences</th></tr>'+ms.map(function(mo){var c=calc(e.k,p,mo,nd_(mo)).c;return'<tr><td>'+MS[+mo.slice(5)-1]+' '+mo.slice(0,4)+'</td><td>'+c.J+'</td><td>'+c.N+'</td><td>'+c.F+'</td><td>'+(c.M+c.C+c.AN+c.CR)+'</td></tr>'}).join("")+'</table>'
+ +'<p><b>Scores mensuels</b></p><table class="tb sm"><tr><th>Mois</th><th>Score</th><th>Observation</th></tr>'+(Object.keys(S.sc).filter(function(k){return k.split("|")[1]==p}).sort().map(function(k){var mo=k.split("|")[0],sv=sf(mo,p);return'<tr><td>'+MS[+mo.slice(5)-1]+' '+mo.slice(0,4)+'</td><td>'+(sv==null?"—":sv+" %")+'</td><td>'+esc(S.sc[k].o||"")+'</td></tr>'}).join("")||'<tr><td colspan="3">—</td></tr>')+'</table>'
+ +'<p><b>Observations HSE :</b> '+esc(s.ob||"")+'</p><div class="np"><label>Observations HSE</label><textarea onchange="sd(\''+p.replace(/'/g,"")+'\').ob=this.value;save()">'+esc(s.ob||"")+'</textarea></div>';
+ out(h)}
+function bars(t,a,mx){var W=300,H=110,n=a.length,bw=Math.floor(W/n)-14,m=mx||Math.max.apply(null,a.map(function(x){return x[1]}).concat([1]));
+ return'<div class="card"><b>'+t+'</b><svg viewBox="0 0 '+W+' '+(H+34)+'" style="width:100%">'+a.map(function(x,i){var hh=Math.round(x[1]/m*H),xx=7+i*(bw+14);return'<rect x="'+xx+'" y="'+(H-hh+14)+'" width="'+bw+'" height="'+hh+'" fill="'+x[2]+'"/><text x="'+(xx+bw/2)+'" y="'+(H-hh+10)+'" font-size="10" text-anchor="middle">'+(x[3]!=null?x[3]:x[1])+'</text><text x="'+(xx+bw/2)+'" y="'+(H+28)+'" font-size="9" text-anchor="middle">'+esc(x[0])+'</text>'}).join("")+'</svg></div>'}
+function kp(l,v,t){return'<div class="card kpi" onclick="setTab('+t+')"><div class="mu">'+l+'</div><div style="font-size:26px;font-weight:600">'+v+'</div></div>'}
+function vh(){var t0=iso(new Date()),P=pl(),cr=0,ea=0,us=0;P.forEach(function(e){var f=fifo(e.p);cr+=f.av;ea+=f.earned;us+=f.used});
+ var cg=S.mv.filter(function(m){return(m.t=="C"||m.t=="CR")&&m.f<=t0&&m.e>=t0}).length,
+ ec=S.ev.map(function(e){return{n:T[L].ev[e.k],d:e.d}}).concat(S.custom).filter(function(e){return e.d&&days(e.d)<=30}).sort(function(a,b){return cmp(a.d,b.d)}),
+ ao=S.an.filter(function(a){return a.s!="Clôturée"}),ac=ao.filter(function(a){return a.g=="Critique"}),mo=t0.slice(0,7),sv=avg(mo),
+ ni=1+T.fr.tasks.length,dn=0,lt=0,pg=0,pm=iso(new Date(new Date().getFullYear(),new Date().getMonth()-1,1)).slice(0,7),
+ un=P.filter(function(e){return sf(pm,e.p)==null}).length,td=[];
+ fridays().forEach(function(f){for(var j=0;j<ni;j++){if(S.done[f.d+"_"+j])dn++;else if(f.d<t0)lt++;else pg++}});
+ ec.forEach(function(e){td.push([ui("أجل قريب: ","Échéance : ")+esc(e.n)+" — "+ff2(e.d)+" ("+days(e.d)+" j)",1])});
+ if(lt)td.push([lt+ui(" مهمة جمعة غير منجزة"," tâche(s) du vendredi non réalisée(s)"),2]);
+ ac.forEach(function(a){td.push([ui("شذوذ حرج: ","Anomalie critique : ")+esc(a.t),6])});
+ if(ao.length>ac.length)td.push([(ao.length-ac.length)+ui(" شذوذ مفتوح"," anomalie(s) ouverte(s)"),6]);
+ S.mv.filter(function(m){return(m.t=="C"||m.t=="CR")&&m.f>t0&&days(m.f)<=14}).forEach(function(m){td.push([ui("عطلة قادمة: ","Congé à venir : ")+esc(m.p)+" — "+ff2(m.f),4])});
+ if(cr>0)td.push([ui("أعوان لديهم رصيد CR متاح","Agents avec CR disponible : ")+P.filter(function(e){return crn(e.p)>0}).length,4]);
+ if(un)td.push([ui("تقييم شهري غير منجز: ","Évaluation non effectuée : ")+MS[+pm.slice(5)-1]+" ("+un+")",5]);
+ var sm=[];for(var i=5;i>=0;i--){var d=new Date(new Date().getFullYear(),new Date().getMonth()-i,1),k=iso(d).slice(0,7),a=avg(k);sm.push([MS[d.getMonth()].slice(0,3),a==null?0:a,"#1f6f5c",a==null?"—":a])}
+ var ga=function(g){return S.an.filter(function(a){return a.g==g}).length};
+ return'<div class="grid">'+kp(ui("العمال","Effectif"),P.length,3)+kp("Chefs de quart",P.filter(function(e){return!e.i}).length,3)+kp(ui("الأعوان","Agents"),P.filter(function(e){return e.i}).length,3)+kp("CR disponible",cr,4)+kp(ui("عطل جارية","Congés en cours"),cg,4)+kp(ui("آجال قريبة","Échéances proches"),ec.length,1)+kp(ui("شذوذات مفتوحة","Anomalies ouvertes"),ao.length,6)+kp(ui("شذوذات حرجة","Anomalies critiques"),ac.length,6)+kp(ui("معدل التنقيط (الشهر)","Score HSE moyen du mois"),sv==null?"—":sv+" %",5)+kp(ui("مهام منجزة","Tâches réalisées"),dn,2)+kp(ui("مهام متأخرة","Tâches en retard"),lt,2)+'</div>'
+ +'<div class="card"><h2>'+ui("للمعالجة","À traiter")+'</h2>'+(td.length?td.map(function(x){return'<div class="row" style="padding:6px 0;border-bottom:1px solid var(--bd);cursor:pointer" onclick="setTab('+x[1]+')"><span>'+x[0]+'</span><span class="mu">›</span></div>'}).join(""):'<p class="mu">—</p>')+'</div>'
+ +'<div class="grid">'+bars(ui("تطور معدل التنقيط","Évolution du score mensuel moyen (%)"),sm,100)+bars("Anomalies",[["Mineure",ga("Mineure"),"#8a908b"],["Majeure",ga("Majeure"),"#c27c0e"],["Critique",ga("Critique"),"#c0392b"]])+bars(ui("مهام الجمعة","Tâches du vendredi"),[["Réalisées",dn,"#2e8b57"],["En cours",pg,"#378ADD"],["En retard",lt,"#c0392b"]])+bars("CR",[["Acquis",ea,"#378ADD"],["Utilisés",us,"#c27c0e"],["Disponibles",cr,"#2e8b57"]])+'</div>'}
+function calc(k,p,mo,nd){var x=[],c={J:0,N:0,F:0,M:0,C:0,AN:0,CR:0};
+ for(var d=1;d<=nd;d++){var ds=mo+"-"+String(d).padStart(2,"0"),b=code(k,ds),m=S.mk[k+"|"+p+"|"+ds],v=b;
+  if(b!="R"){if(m){v=m;c[m]++}else{c[b]++;if(isHol(ds))c.F++}}x.push(v)}return{x:x,c:c}}
+function mk(k,i,ds){var p=[S.q[k].c].concat(S.q[k].a)[i],key=k+"|"+p+"|"+ds;if(code(k,ds)=="R")return;
+ var q=["","M","C","AN","CR"],n=q[(q.indexOf(S.mk[key]||"")+1)%5];if(n)S.mk[key]=n;else delete S.mk[key];save();render()}
+function eq(k,v){var l=v.split("\n").map(function(x){return x.trim()}).filter(Boolean);S.q[k].c=l[0]||"";S.q[k].a=l.slice(1);save();render()}
+function vq(){var mo=window.mo||iso(new Date()).slice(0,7),nd=new Date(+mo.slice(0,4),+mo.slice(5),0).getDate(),
+ h='<div class="card np"><div class="row"><input type="month" style="width:170px" value="'+mo+'" onchange="window.mo=this.value;render()"><span class="row"><button onclick="csv()">'+ui("تحميل التنقيط CSV","Télécharger le pointage (CSV)")+'</button><button onclick="print()">'+T[L].print+'</button></span></div><p class="mu">J 06h–19h · N 19h–06h · R '+ui("راحة","récup")+' · '+ui("انقر على الخانة: M مرض ← C عطلة ← AN عطلة ملغاة","clic sur une case : M maladie → C congé → AN congé annulé")+' · '+ui("الأحمر = عطلة رسمية","en-tête rouge = jour férié")+'</p></div>';
+ Object.keys(S.q).forEach(function(k){var t=S.q[k],ppl=[t.c].concat(t.a);
+  h+='<div class="card" style="overflow-x:auto"><div class="row"><b>Quart '+k+'</b><button class="np" onclick="prog(\''+k+'\',\''+mo+'\')">'+ui("برنامج العمل A4","Programme A4")+'</button></div><table class="tb sm"><tr><th>Nom</th>';
+  for(var d=1;d<=nd;d++){var ds=mo+"-"+String(d).padStart(2,"0");h+='<th'+(isHol(ds)?' style="background:#f5b7b1"':"")+'>'+d+'</th>'}
+  h+='<th>J</th><th>N</th><th>F</th><th>M</th><th>C</th><th>AN</th><th>CR</th></tr>';
+  ppl.forEach(function(p,i){var o=calc(k,p,mo,nd);h+='<tr><td style="white-space:nowrap">'+(i?"":"★ ")+'<a href="#" onclick="fiche('+pl().findIndex(function(x){return x.k==k&&x.i==i})+');return false">'+esc(p)+'</a></td>';
+   o.x.forEach(function(v,j){var ds=mo+"-"+String(j+1).padStart(2,"0");h+='<td style="text-align:center;cursor:pointer;background:'+COL[v]+'" onclick="mk(\''+k+'\','+i+',\''+ds+'\')">'+v+'</td>'});
+   h+=[o.c.J,o.c.N,o.c.F,o.c.M,o.c.C,o.c.AN,o.c.CR].map(function(n){return'<td><b>'+n+'</b></td>'}).join("")+'</tr>'});
+  h+='</table></div>'});
+ h+='<div class="card np"><h2>'+ui("تعديل الفرق","Modifier les effectifs")+'</h2>';
+ Object.keys(S.q).forEach(function(k){h+='<label>Quart '+k+' — '+ui("بداية الدورة (أول يوم نهاري)","début de cycle (1er jour de JOUR)")+'</label><input type="date" value="'+S.q[k].s+'" onchange="S.q[\''+k+'\'].s=this.value;save();render()"><label>'+ui("السطر الأول رئيس الفرقة ثم الأعوان","1re ligne = chef de quart, puis un agent par ligne")+'</label><textarea onchange="eq(\''+k+'\',this.value)">'+esc([S.q[k].c].concat(S.q[k].a).join("\n"))+'</textarea>'});
+ return h+'<label>'+ui("عطل رسمية إضافية (الأعياد الدينية) AAAA-MM-JJ","Jours fériés supplémentaires (fêtes religieuses) AAAA-MM-JJ")+'</label><textarea onchange="S.hol=this.value;save();render()">'+esc(S.hol)+'</textarea></div>'}
+function csv(){var mo=window.mo||iso(new Date()).slice(0,7),nd=new Date(+mo.slice(0,4),+mo.slice(5),0).getDate(),hd=["Quart","Nom"];
+ for(var i=1;i<=nd;i++)hd.push(i);var r=[hd.concat(["Jours","Nuits","Feries travailles","Maladie","Conge","Conge annule","Recup"])];
+ Object.keys(S.q).forEach(function(k){[S.q[k].c].concat(S.q[k].a).forEach(function(p){var o=calc(k,p,mo,nd);r.push([k,p].concat(o.x,[o.c.J,o.c.N,o.c.F,o.c.M,o.c.C,o.c.AN,o.c.CR]))})});
+ var a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.map(function(x){return x.join(";")}).join("\n")],{type:"text/csv"}));a.download="pointage-"+mo+".csv";a.click()}
+var DB;function idb(cb){if(DB)return cb(DB);var r=indexedDB.open("ce211f",1);r.onupgradeneeded=function(){r.result.createObjectStore("f")};r.onsuccess=function(){DB=r.result;cb(DB)}}
+function putF(id,v,cb){if(window.ce211&&v&&v.arrayBuffer){v.arrayBuffer().then(function(b){return ce211.putFile(id,v.name,b)}).then(cb);return}idb(function(d){d.transaction("f","readwrite").objectStore("f").put(v,id).onsuccess=cb})}
+function getF(id,cb){if(window.ce211&&id!="dir"){ce211.getFile(id).then(function(b){cb(b?new Blob([b]):null)});return}idb(function(d){d.transaction("f").objectStore("f").get(id).onsuccess=function(e){cb(e.target.result)}})}
+function aa(){var g=function(x){return document.getElementById("a_"+x).value.trim()};if(!g("t"))return;
+ S.an.push({t:g("t"),z:g("z"),d:g("d"),g:g("g"),r:g("r"),e:g("e"),a:g("a"),s:"Ouverte",ef:"À évaluer",fj:[]});save();render()}
+function att(i,inp){Array.prototype.forEach.call(inp.files,function(f){var id="f"+Date.now()+Math.random().toString(36).slice(2,6);putF(id,f,function(){S.an[i].fj.push({id:id,n:f.name});save();render()})})}
+function dl(i,j){var f=S.an[i].fj[j];getF(f.id,function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f.n;a.click()})}
+function sel(o,v,fn){return'<select onchange="'+fn+'">'+o.map(function(x){return'<option'+(x==v?" selected":"")+'>'+x+'</option>'}).join("")+'</select>'}
+function va(){var h='<div class="card np"><h2>'+ui("متابعة الشذوذات","Suivi des anomalies du centre")+'</h2><div class="grid"><div><label>Désignation</label><input id="a_t"></div><div><label>Zone / équipement</label><input id="a_z"></div><div><label>Date du constat</label><input type="date" id="a_d"></div><div><label>Gravité</label><select id="a_g"><option>Mineure</option><option>Majeure</option><option>Critique</option></select></div><div><label>Responsable</label><input id="a_r"></div><div><label>Échéance</label><input type="date" id="a_e"></div></div><label>Action corrective</label><textarea id="a_a"></textarea><br><button class="p" onclick="aa()">'+T[L].add+'</button></div><div class="row np" style="margin-bottom:12px"><span class="row">'+sel(["","Ouverte","En cours","Clôturée"],window.afs||"","window.afs=this.value;render()")+sel(["","Mineure","Majeure","Critique"],window.afg||"","window.afg=this.value;render()")+'</span><button onclick="aud()">'+ui("ملف التدقيق (نقرة واحدة)","Dossier audit (1 clic)")+'</button></div><div id="aout"></div>';
+ S.an.forEach(function(a,i){if((window.afs&&a.s!=window.afs)||(window.afg&&a.g!=window.afg))return;h+='<div class="card np"><div class="row"><b>'+(i+1)+'. '+esc(a.t)+'</b><span class="b '+(a.g=="Critique"?"rd":a.g=="Majeure"?"or":"gy")+'">'+a.g+'</span></div><div class="mu">'+esc(a.z)+' — '+a.d+' — '+esc(a.r)+' — échéance '+(a.e||"—")+' '+(a.e&&a.s!="Clôturée"?badge(a.e):"")+'</div><p>'+esc(a.a)+'</p><div class="grid"><div><label>Statut</label>'+sel(["Ouverte","En cours","Clôturée"],a.s,"S.an["+i+"].s=this.value;save();render()")+'</div><div><label>Indice d\'efficacité</label>'+sel(["À évaluer","Efficace","Partielle","Non efficace"],a.ef,"S.an["+i+"].ef=this.value;save();render()")+'</div></div><p>'+(a.fj||[]).map(function(f,j){return'<a href="#" onclick="dl('+i+','+j+');return false">📎 '+esc(f.n)+'</a>'}).join(" · ")+'</p><input type="file" multiple accept=".pdf,.msg,.eml,.png,.jpg,.jpeg,.docx" onchange="att('+i+',this)"> <button onclick="S.an.splice('+i+',1);save();render()">'+T[L].del+'</button></div>'});
+ return h}
+function aud(){document.getElementById("aout").innerHTML='<div class="card"><div class="doc"><h2>NAFTAL GPL — CE211 — Registre de suivi des anomalies</h2><p>Édité le '+new Date().toLocaleDateString("fr-FR")+'</p><table class="tb sm"><tr><th>N°</th><th>Anomalie</th><th>Zone</th><th>Gravité</th><th>Constat</th><th>Responsable</th><th>Échéance</th><th>Action corrective</th><th>Statut</th><th>Efficacité</th><th>Pièces jointes</th></tr>'+S.an.map(function(a,i){return'<tr>'+[i+1,a.t,a.z,a.g,a.d,a.r,a.e,a.a,a.s,a.ef,(a.fj||[]).map(function(f){return f.n}).join(", ")].map(function(x){return'<td>'+esc(x||"")+'</td>'}).join("")+'</tr>'}).join("")+'</table></div></div>';setTimeout(print,200)}
+function pick(){if(!window.showDirectoryPicker){alert("Chrome / Edge requis");return}showDirectoryPicker({mode:"readwrite"}).then(function(h){idb(function(d){d.transaction("f","readwrite").objectStore("f").put(h,"dir").onsuccess=function(){alert("OK : "+h.name)}})}).catch(function(){})}
+async function sdir(){try{var h=await new Promise(function(r){getF("dir",r)});if(!h){alert(ui("اختر المجلد أولاً","Choisissez d'abord le dossier"));return}
+ if(await h.requestPermission({mode:"readwrite"})!="granted")return;
+ var w=await(await h.getFileHandle("ce211-donnees.json",{create:true})).createWritable();await w.write(JSON.stringify(S));await w.close();
+ var sd=await h.getDirectoryHandle("pieces-jointes",{create:true});
+ for(var i=0;i<S.an.length;i++)for(var f of(S.an[i].fj||[])){var b=await new Promise(function(r){getF(f.id,r)});if(!b)continue;var x=await(await sd.getFileHandle((i+1)+"_"+f.n,{create:true})).createWritable();await x.write(b);await x.close()}
+ alert("OK")}catch(e){alert("Erreur : "+e.message)}}
+function v3(){var t=T[L];return(window.ce211?'<div class="card"><h2>'+ui("مجلد البيانات","Dossier des données")+'</h2><p class="mu">'+esc(ce211.root)+'</p><p class="mu">'+ui("القائمة «Sauvegarde» لإنشاء نسخة أو استرجاعها.","Menu « Sauvegarde » : créer ou restaurer une copie.")+'</p></div>':'<div class="card"><h2>'+ui("مجلد التخزين على الحاسوب","Dossier de stockage sur le PC")+'</h2><p class="mu">'+ui("اختر المجلد مرة واحدة (Chrome أو Edge) ثم احفظ فيه البيانات والمرفقات.","Choisissez le dossier une fois (Chrome ou Edge), puis enregistrez-y les données et les pièces jointes.")+'</p><br><button onclick="pick()">'+ui("اختيار المجلد","Choisir le dossier")+'</button> <button class="p" onclick="sdir()">'+ui("حفظ الآن","Enregistrer maintenant")+'</button></div>')+'<div class="card"><h2>'+t.bk+'</h2><p class="mu">'+t.bkn+'</p><br><button onclick="ex()">'+t.exp+'</button><br><br><label>'+t.imp+'</label><input type="file" accept=".json" onchange="im(this)"></div>'}
+function im(i){var f=i.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{S=JSON.parse(r.result);ini();save();render()}catch(e){alert("JSON invalide")}};r.readAsText(f)}
+load();ini();setLang("ar");
+</script>
+</body>
+</html>
