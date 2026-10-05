@@ -1,0 +1,47 @@
+name: Build NAFTAL CE211 HSE Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package Electron for Windows
+        run: npm run pack
+
+      - name: Archive Windows application
+        run: |
+          $source = '/tmp/NAFTAL-CE211-HSE-win32-x64'
+          $zipPath = 'NAFTAL-CE211-HSE-win32-x64.zip'
+          if (Test-Path $source) {
+            Compress-Archive -Path "$source\**" -DestinationPath $zipPath
+            Write-Host "Created zip artifact: $zipPath"
+          } else {
+            Write-Host "Source folder not found at $source"
+          }
+
+      - name: Upload Windows application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NAFTAL-CE211-HSE-windows
+          path: |
+            NAFTAL-CE211-HSE-win32-x64.zip
+            /tmp/NAFTAL-CE211-HSE-win32-x64/**/*
+          retention-days: 30
