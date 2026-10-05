@@ -1,0 +1,29 @@
+{
+  "name": "naftal-ce211-hse",
+  "productName": "NAFTAL CE211 — HSE CONTROL CENTER",
+  "version": "1.0.0",
+  "description": "Application de tableau de bord HSE pour la branche GPL - District Skikda - Centre Emplisseur CE211",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-packager . NAFTAL-CE211-HSE --platform=win32 --arch=x64 --out=/tmp --overwrite",
+    "build": "electron-packager . NAFTAL-CE211-HSE --platform=win32 --arch=x64 --out=/tmp --overwrite --icon=icon.ico"
+  },
+  "keywords": [
+    "hse",
+    "ce211",
+    "gpl",
+    "naftal",
+    "electron",
+    "desktop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "idb": "^8.0.0"
+  }
+}
